@@ -1,0 +1,168 @@
+*****************************Vector**************************************
+
+template <class T, class Alloc = allocator<T>>
+class vector;
+
+- Vectors are sequence containers representing arrays that can change in size.
+- Vectors are contigious storage locations for their elements.
+- their size can change dynamically,
+- vectors use a dynamically allocated array to store their elements 
+- this array mey need to be reallocated in order to grow in size.
+- the container have an actual capacity greaer than the storage strictely needed to contain it's elements.
+!!! libraries cam implement different strategies for growth to balance between memory usage and reallocations.
+- reallocations should only happen at logarithmically growing intervals of size, so that the insertion of individual 
+ elements at the end of vector can be provided with amortized const time complexity.
+- vectors are very efficient accessing it's elements and relatively efficient adding or removing elements from it's end.
+
+--------- constructor -----------------
+default : 
+        explicit vector (const allocator_type& alloc = allocator_type ());
+fill	: 
+        explicit vector (size_type n, const value_type& val =  value_type (), const allocator_type& alloc = allocator_type ());
+range	: 
+        template <class InputIterator>
+			vector (InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type ());
+copy	: 
+        vector (const vector& x);
+
+-- the container keeps an internal copy of alloc, which is used to allocate storage throughout it's lifetime.
+The storage for the elements is allocated using this internal allocator.
+
+---------- destructor ------------------
+		~vector ();
+destorys all container elements, and deallocate all storage capacity allocated by vector using its allocator.
+- never throw an exception.
+
+---------- operator = -------------------
+vector & operator = (const vector& x);
+
+the container preserves its current allocator, which is used to allocate storage in case of reallocation.
+any elements held in the container before the call are either assigned to or destroyed.
+all iterators, references and pointers related to this container before the call are invalid.
+
+------------ iterator ---------------------
+	- iterator begin ();
+	- const_iterator begin () const;
+returns an iterator pointing to the first element in the vector.
+return a random iterator pointing to it.
+
+iterator and const_iterator are random access iterator types.
+
+	- iterator end ();
+	- const_iterator end () const;
+returns an iterator referring to the past-the-end element in the vector container.
+if the container is empty, the function returns the same as vector::begin.
+
+	reverse_iterator rbegin ();
+	const_reverse_iterator rbegin() const;
+
+returns a reverse iterator pointing to the last element in the vector
+returns a reverse random access iterators.
+
+	reverse_iterator rend();
+	const_reverse_iterator rend() const;
+
+returns a reverse iterator pointing to the theoritical element preceding the first element in the vector.
+
+------------------- capacity -----------------------
+	size_type size() const;
+returns the number of elements in the vector.
+
+	size_type max_size () const;
+returns the maximum number of elements that the vector can hold.
+the container is by no means guaranteed to be able to reach that size.
+
+	bool empyt () const;
+returns whether the vector is empty (whether its size is  0)
+
+	void resize (size_type n, value_type val = value_type ());
+Resizes the container so that it contains n elements.
+if n is smaller that the current container size, the content is reduced to its first n elements, removing those beyond 
+and destroying them.
+if n is greater than the current container size, the content is expanded by inserting at the end as many elements as needed
+to reach a size of n.
+if n is also greater than the current container capacity, an automatic reallocation of the allocated storage space takes place.
+
+	size_type capacity () const;
+Returns the size of the storage space currently allocated for the vector, expressed int terms of the elements.
+
+	void reserve (size_type n);
+Request a change in capacity.
+Request that the vector capcity be at least enough to contain n elements.
+Note that the resulting vector capacity may be equal or greater than n.
+if n is greater than the current vector capacity, the function causes the container to reallocate its storage increasing it's 
+capacity to n (or greater).
+if the size requested is greater than the maximum size (vector::max_size), a lenght_error is thrown.
+
+
+------------------ element access ------------------------
+	reference 		front ();
+	const_reference fron () const;
+returns a reference to the first element in the vector.
+
+	refernce 		back ();
+	const_reference back () const;
+returns a reference to the last element in vector.
+
+	reference 		operator [] (size_type n);
+	const_reference operator [] (size_type n) const;
+returns a reference to the element at position n in the vector container.
+
+	reference 		at (size_type n)
+	const_refernce 	at (size_type n) n;
+Returns a reference to the element at position n in the vector.
+if n is greater than, or equal to, the vector size, an exception of type out_of_range is thrown.
+
+--------------------- modifiers ---------------------------
+	range:
+		template <class InputIterator>
+			void assign (InputIterator first, InputIterator last);
+	fill:
+		void assign (size_type n, const value_type& val);
+Assigns new contents to the vector, replacing it's current contents, and modifying it's size accordingly.
+any elements held in the container before the call are destroyed and repaced by newly contructed elements (no assignements 
+of elements take place).
+
+
+	single element:
+		iterator insert (iterator position, const value_type& val);
+	fill:
+		void insert (iterator position, size_type n, const value_type& val);
+	range:
+		template <class InputIterator>
+			void insert (iterator position, InputIterator first, InputIterator last);
+the vector is extended by inserting new elements before the element at the specified position, effictevely increasing the
+container size by the number of elements inserted.
+this causes an automatic reallocation of the allated storage iff the new vector size surpasses the current vector capacity.
+
+
+	iterator erase (iterator position);
+	iterator erase (iterator first, iterator last);
+
+removes from the vector either a single element (position) or a range of elements.
+this effictively reduces the container size by the number of elements removed, which are destroyed.
+
+	void push_back (const value_type &val);
+Adds a new element at the end of the vector, after it's current last element, the content of val is copied to the new element
+	
+	void pop_back ();
+Removes the last element in the vector, effectively reducing the container size by one.
+this destroyes the removed element.
+
+	void clear ();
+Removes all elements from the vector (which are destroyed), leaving the container with size of 0.
+
+	void swap (vector &v);
+Exchanges the content of the container by the content of x, which is another vector object of the same type, sizes may differ
+
+----------------------observers---------------------------
+	allocator_type get_allocator () const;
+
+Returns a copy of the allocator object associated with vector.
+
+
+
+
+
+==================================
+random access iterator is a BidirectionalIterator that can be moved to point to any element in constant time.
