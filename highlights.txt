@@ -97,7 +97,7 @@ if the size requested is greater than the maximum size (vector::max_size), a len
 
 ------------------ element access ------------------------
 	reference 		front ();
-	const_reference fron () const;
+	const_reference front () const;
 returns a reference to the first element in the vector.
 
 	refernce 		back ();
@@ -166,3 +166,5 @@ Returns a copy of the allocator object associated with vector.
 
 ==================================
 random access iterator is a BidirectionalIterator that can be moved to point to any element in constant time.
+
+
