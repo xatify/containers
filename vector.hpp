@@ -13,8 +13,8 @@ namespace ft {
 			typedef Iterator<const T>               		const_iterator;
 			typedef T&					            		reference;
 			typedef const T&			            		const_reference;
-            typedef reverse_iterator<iterator>      		reverse_iterator;
-            typedef reverse_iterator<const_iterator			const_reverse_iterator;
+			typedef reverse_iterator<iterator>      		reverse_iterator;
+			typedef reverse_iterator<const_iterator			const_reverse_iterator;
 
 			explicit vector (const allocator_type& alloc_ = allocator_type (): alloc (alloc) {
 				elem = space = last = nullptr;
@@ -104,10 +104,40 @@ namespace ft {
 			size_type capacity () const { return (last - elem); };
 
 			void resize (size_type n, value_type val = value_type ()) {
-				
+				size_type size = space - elem;
+				if (n > size)) {
+					while (size++ < n)
+						push_back (val);
+				}
+				else {
+					space = elem + n;
+					while (n++ < size)
+						~(*(elem + n));
+				}
 			}
 
-			void reserve (size_type n);
+			void reserve (size_type n) {
+				if (n > max_size())
+					throw std::length_error ();
+				else if (n > capacity ()) {
+					pointer neww = alloc.allocate (n);
+					if (elem == nullptr) {
+						elem = space = neww;
+						last = elem + n;
+					}
+					else {
+						size_type sz = size ();
+						for (size_type i = 0; i < sz; ++i) {
+							alloc.construct (neww + i, *(elem + i));
+							~(*(elem + i));
+						}
+						alloc.deallocate (elem, capacity ());
+						elem = neww;
+						space = elem + sz;
+						last = elem + n;
+					}
+				}
+			};
 
 			// element access
 			reference front () { return *elem; };
