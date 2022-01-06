@@ -1,6 +1,7 @@
 
 #include <memory>
 #include "iterator.hpp"
+#include <algorithm>
 
 namespace ft {
 	template <typename T, typename Alloc = std::allocator <T> >
@@ -14,10 +15,10 @@ namespace ft {
 			typedef T&					            		reference;
 			typedef const T&			            		const_reference;
 			typedef reverse_iterator<iterator>      		reverse_iterator;
-			typedef reverse_iterator<const_iterator			const_reverse_iterator;
+			typedef reverse_iterator<const_iterator>		const_reverse_iterator;
 
 			explicit vector (const allocator_type& alloc_ = allocator_type (): alloc (alloc) {
-				elem = space = last = nullptr;
+				elem = space = last = 0x0;
 			}
 
 			explicit vector (size_type n, const value_type& value = value_type (), const allocator_type& alloc_ = allocator_type ())): alloc (alloc_) {
@@ -41,45 +42,37 @@ namespace ft {
 			
 			vector (const vector& x): alloc (x.alloc) {
 				if (!x.capacity ())
-					elem = space = last = nullptr;
+					elem = space = last = 0x0;
 				else {
 					elem = alloc.allocate (x.capacity());
 					space = elem + x.size();
 					last = elem + x.capacity ();
-					for (x.iter it = x.begin (); it != it.end (); ++it) {
-						alloc.construct (elem + (it - x.begin ()), *it);
-					}
+					size_type i = 0;
+					iterator it = x.begin ();
+					while (it != it.end ())
+						alloc.construct (elem + i++, *it++);
 				}
 			}
 			
 			~vector () {
-					for (T* p = elem; p != space; ++p)
-						~(*p);
-					alloc.deallocate (elem, last - elem);
+				clear ();
+				alloc.deallocate (elem, last - elem);
 			};
 
 			vector& operator = (const vector& x) {
-				for (iterator it = being (); it != last (); ++iter)
-					~(*iter);
+				clear ()
 				alloc.deallocate (elem, last - elem);
-				elem = space = elem = nullptr;
+				elem = space = elem = 0x0;
 				if (x.capacity ()) {
 					elem = alloc.allocate (x.capacity());
 					size_type n = 0;
-					for (iterator iter = x.being (); iter != x.end (); ++iter) {
-						alloc.construct (elem + n, *iter);
-						++n;
-					}
-					iterator rhs = x.begin ();
-					n = 0;
-					while (rhs != x.end ())
-						alloc.construct (elem + n++, *rhs++);
-					space = elem + n;
+					for (iterator iter = x.begin (); iter != x.end (); ++iter)
+						alloc.construct (elem + n++, *iter);
+					space = elem + x.size ();
 					last = elem + x.capacity ();
 				}
 				return (*this);
- 			};
-
+ 			}
 
 			// iterators
 			iterator begin () { return elem; };
@@ -120,19 +113,19 @@ namespace ft {
 				if (n > max_size())
 					throw std::length_error ();
 				else if (n > capacity ()) {
-					pointer neww = alloc.allocate (n);
+					T* tmp = alloc.allocate (n);
 					if (elem == nullptr) {
-						elem = space = neww;
+						elem = space = tmp;
 						last = elem + n;
 					}
 					else {
 						size_type sz = size ();
 						for (size_type i = 0; i < sz; ++i) {
-							alloc.construct (neww + i, *(elem + i));
+							alloc.construct (tmp + i, *(elem + i));
 							~(*(elem + i));
 						}
 						alloc.deallocate (elem, capacity ());
-						elem = neww;
+						elem = tmp;
 						space = elem + sz;
 						last = elem + n;
 					}
@@ -161,28 +154,124 @@ namespace ft {
 
 			// modifiers
 			template <class InputIterator>
-				void assign (InputIterator first, InputIterator last);
+				void assign (InputIterator first, InputIterator last) {
+					clear ();
+					while (first != last) {
+						push_back (*first);
+						++first;
+					}
+				}
 			
-			void assign (size_type n, const value_type& val);
+			void assign (size_type n, const value_type& val) {
+				clear ();
+				while (n--)
+					push_back (val);
+			}
 
-			iterator insert (iterator position, const value_type& val);
+			iterator insert (iterator position, const value_type& val) {
+				size_type diff = position - begin ();
+				push_back (val);
+				position = begin () + diff;
+				for (iterator it = end (); it != position; --it) {
+					*(it) = *(it - 1);
+				}
+				*it = val;
+				return it;
+			}
 			
-			void insert (iterator position, size_type n, const value_type& val);
+			void insert (iterator position, size_type n, const value_type& val) {
+				size_type diff = position - begin ();
+				if (n + size () > capacity ())
+					reserve (n + size ());
+				position = begin () + diff;
+				for (iterator it = end () - 1; it >= position; --it) {
+					alloc.construct (&(*it) + n, *it);
+				}
+				space += n;
+				while (n--)
+					*position++ = val;
+			}
 
 			template <class InputIterator>
-				void insert (iterator position, InputIterator first, InputIterator last);
+				void insert (iterator position, InputIterator first, InputIterator last) {
+					InputIterator tmp = first;
+					size_type sz = 0;
+					while (first++ != last)
+						++sz;
+					first = tmp;
+					size_type pos = position - begin ();
+					if (sz + size () > capacity ())
+						reserve (sz + size ());
+					position = begin () + pos;
+					for (iterator it = end () - 1; it >= position; --it) {
+						alloc.construct (&(*it) + sz, *it);
+					}
+					space += n;
+					while (sz--)
+						*position++ = *first++;
+				}
 			
-			iterator erase (iterator position);
+			iterator erase (iterator position) {
+				~(*position);
+				for (iterator it = position; it != end () - 1; ++it)
+					*it = *(it + 1);
+				~(*(end () - 1));
+				space -= 1;
+				return position;
+			}
 			
-			iterator erase (iterator first, iterator last);
+			iterator erase (iterator first, iterator lst) {
+				iterator tmp (first);
+				size_type i = 0;
+				while (first != lst) {
+					~(*first++);
+					++i;
+				}
+				while (lst != end())
+					*tmp++ = *lst++;
+				while (tmp != end ());
+					~(*tmp++);
+				space -= i;
+			}
 
-			void push_back (const value_type& val);
+			void push_back (const value_type& val) {
+				size_type c = capacity ();
+				if (c == 0) {
+					elem = alloc.allocate (1);
+					space = elem;
+					last = elem + 1;
+				}
+				else if (space == last) {
+					c <<= 1;
+					T *tmp = alloc.allocate (c);
+					for (size_type i = 0; i < space - elem; ++i) {
+						alloc.construct (tmp + i, *(elem + i));
+						~(*(elem + i));
+					}
+					space = (space - elem) + tmp;
+					alloc.deallocate (elem);
+					elem = tmp;
+					last = elem + c;
+				}
+				alloc.construct (space++, val);
+			}
 			
-			void pop_back ();
+			void pop_back () {
+				~(*(--space));
+			}
 
-			void clear ();
+			void clear () {
+				for (T* f = elem; f != space; ++f)
+					~(*f);
+				space = elem;
+			}
 
-			void swap (vector &v);
+			void swap (vector &v) {
+				std::swap (alloc, v.alloc);
+				std::swap (elem, v.elem);
+				std::swap (space, v.space);
+				std::swap (last, v.last);
+			}
 
 			// observers
 			allocator_type get_allocator () const { return alloc; };
