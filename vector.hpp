@@ -14,14 +14,14 @@ namespace ft {
 			typedef Iterator<const T>               		const_iterator;
 			typedef T&					            		reference;
 			typedef const T&			            		const_reference;
-			typedef reverse_iterator<iterator>      		reverse_iterator;
-			typedef reverse_iterator<const_iterator>		const_reverse_iterator;
+			typedef rev_iterator<iterator>      		    reverse_iterator;
+			typedef rev_iterator<const_iterator>		    const_reverse_iterator;
 
-			explicit vector (const allocator_type& alloc_ = allocator_type (): alloc (alloc) {
+			explicit vector (const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
 				elem = space = last = 0x0;
 			}
 
-			explicit vector (size_type n, const value_type& value = value_type (), const allocator_type& alloc_ = allocator_type ())): alloc (alloc_) {
+			explicit vector (size_type n, const value_type& value = value_type (), const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
 				elem = alloc.allocate (n);
 				space = last = elem + n;
 				for (T* p = elem; p != last; ++p)
@@ -32,7 +32,7 @@ namespace ft {
 				vector(InputIterator first, InputIterator last, const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
 					size_type n = 0;
 					for (InputIterator f = first; f != last; ++f)
-						n++
+						n++;
 					elem = alloc.allocate (n);
 					space = last = elem + n;
 					for (size_type n = 0; first != last; ++first, ++n) {
@@ -60,7 +60,7 @@ namespace ft {
 			};
 
 			vector& operator = (const vector& x) {
-				clear ()
+				clear ();
 				alloc.deallocate (elem, last - elem);
 				elem = space = elem = 0x0;
 				if (x.capacity ()) {
@@ -75,11 +75,11 @@ namespace ft {
  			}
 
 			// iterators
-			iterator begin () { return elem; };
-			const_iterator begin () const { return elem; };
+			iterator begin () { return iterator (elem) ; };
+			const_iterator begin () const { return const_iterator (elem); };
 
-			iterator end () { return space; };
-			const_iterator end () const { return space; }
+			iterator end () { return iterator (space); };
+			const_iterator end () const { return const_iterator (space); }
 
 			reverse_iterator rbegin () { return space; };
 			const_reverse_iterator rbegin () const { return space; };
@@ -92,13 +92,13 @@ namespace ft {
 
 			size_type max_size () const { return alloc.max_size (); }
 
-			bool empty () const { return (elem == space) };
+			bool empty () const { return (elem == space); };
 			
 			size_type capacity () const { return (last - elem); };
 
 			void resize (size_type n, value_type val = value_type ()) {
 				size_type size = space - elem;
-				if (n > size)) {
+				if (n > size) {
 					while (size++ < n)
 						push_back (val);
 				}
@@ -111,7 +111,7 @@ namespace ft {
 
 			void reserve (size_type n) {
 				if (n > max_size())
-					throw std::length_error ();
+					throw std::length_error ("length_error");
 				else if (n > capacity ()) {
 					T* tmp = alloc.allocate (n);
 					if (elem == nullptr) {
@@ -139,17 +139,17 @@ namespace ft {
 			reference back () { return *space; };
 			const_reference back () const { return *space; };
 
-			reference operator [] (size_type n) { return elem[i]; };
-			const_reference operator [] (size_type n) const { return elem[i]; };
+			reference operator [] (size_type n) { return elem[n]; };
+			const_reference operator [] (size_type n) const { return elem[n]; };
 
 			reference at (size_type n) { 
-				if (n >= (space - elem)) throw std::out_of_range ();
-				return (elem[i]);
+				if (n >= (space - elem)) throw std::out_of_range ("out of range");
+				return (elem[n]);
 			}
 
-			const_reference at (size_type n) {
-				if (n >= (space - elem)) throw std::out_of_range ();
-				return (elem[i]);
+			const_reference at (size_type n) const {
+				if (n >= (space - elem)) throw std::out_of_range ("out of range");
+				return (elem[n]);
 			};
 
 			// modifiers
@@ -172,7 +172,8 @@ namespace ft {
 				size_type diff = position - begin ();
 				push_back (val);
 				position = begin () + diff;
-				for (iterator it = end (); it != position; --it) {
+                iterator it = end ();
+				for (; it != position; --it) {
 					*(it) = *(it - 1);
 				}
 				*it = val;
@@ -206,7 +207,6 @@ namespace ft {
 					for (iterator it = end () - 1; it >= position; --it) {
 						alloc.construct (&(*it) + sz, *it);
 					}
-					space += n;
 					while (sz--)
 						*position++ = *first++;
 				}
@@ -229,7 +229,7 @@ namespace ft {
 				}
 				while (lst != end())
 					*tmp++ = *lst++;
-				while (tmp != end ());
+				while (tmp != end ())
 					~(*tmp++);
 				space -= i;
 			}
@@ -246,10 +246,10 @@ namespace ft {
 					T *tmp = alloc.allocate (c);
 					for (size_type i = 0; i < space - elem; ++i) {
 						alloc.construct (tmp + i, *(elem + i));
-						~(*(elem + i));
+					    alloc.destroy(elem + i);
 					}
 					space = (space - elem) + tmp;
-					alloc.deallocate (elem);
+					alloc.deallocate (elem, 1);
 					elem = tmp;
 					last = elem + c;
 				}
@@ -262,7 +262,7 @@ namespace ft {
 
 			void clear () {
 				for (T* f = elem; f != space; ++f)
-					~(*f);
+					alloc.destroy (f);
 				space = elem;
 			}
 
