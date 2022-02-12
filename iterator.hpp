@@ -42,8 +42,8 @@ namespace ft {
         public:
 
 			Iterator (): _ptr (nullptr) {}
-			explicit Iterator (pointer  ptr): _ptr (ptr) {}
-			explicit Iterator (const Iterator& iter): _ptr (iter._ptr) {}
+			Iterator (pointer  ptr): _ptr (ptr) {}
+			Iterator (const Iterator& iter): _ptr (iter._ptr) {}
 			Iterator & operator = (const Iterator &iter) { _ptr = iter._ptr; return *this; }
 
 			operator Iterator<const T> () const { return Iterator<const T> (*this) ; };
