@@ -1,6 +1,9 @@
+#ifndef __VECTOR_HPP__
+#define __VECTOR_HPP__
 
 #include <memory>
 #include "iterator.hpp"
+#include "type_traits.hpp"
 #include <algorithm>
 
 namespace ft {
@@ -21,15 +24,18 @@ namespace ft {
 				elem = space = last = 0x0;
 			}
 
-			explicit vector (size_type n, const value_type& value = value_type (), const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
+			explicit vector (size_type n, const value_type& value = value_type (), 
+                            const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
 				elem = alloc.allocate (n);
 				space = last = elem + n;
 				for (T* p = elem; p != last; ++p)
 					alloc.construct (p, value);
 			}
 
-			template <typename InputIterator>
-				vector(InputIterator first, InputIterator last, const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
+			template <typename InputIterator, typename = enable_if<Input_iterator<InputIterator>, InputIterator>>
+				vector(InputIterator first, InputIterator last,
+                        //typename enable_if<!is_same<iterator_traits<InputIterator>::iterator_category, void>, InputIterator> 
+                        const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
 					size_type n = 0;
 					for (InputIterator f = first; f != last; ++f)
 						n++;
@@ -244,7 +250,7 @@ namespace ft {
 				else if (space == last) {
 					c <<= 1;
 					T *tmp = alloc.allocate (c);
-					for (size_type i = 0; i < space - elem; ++i) {
+					for (size_type i = 0; i < static_cast <size_type> (space - elem); ++i) {
 						alloc.construct (tmp + i, *(elem + i));
 					    alloc.destroy(elem + i);
 					}
@@ -284,3 +290,5 @@ namespace ft {
 	};
 
 }
+
+#endif
