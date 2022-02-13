@@ -33,11 +33,12 @@ namespace ft {
 			}
 
 			template <typename InputIterator>
-				vector(InputIterator first, typename enable_if <check<typename InputIterator::iterator_category>::val, InputIterator>::type last,
+				vector(InputIterator frst, typename enable_if <check<typename InputIterator::iterator_category>::val, InputIterator>::type lst,
                         const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
-                    while (first != last) {
-                        push_back (*first);
-                        ++first;
+                    elem = space = last = 0x0;
+                    while (frst != lst) {
+                        push_back (*frst);
+                        ++frst;
                     }
 				}
 			
