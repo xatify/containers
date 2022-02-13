@@ -43,17 +43,13 @@ namespace ft {
 				}
 			
 			vector (const vector& x): alloc (x.alloc) {
-				if (!x.capacity ())
-					elem = space = last = 0x0;
-				else {
-					elem = alloc.allocate (x.capacity());
-					space = elem + x.size();
-					last = elem + x.capacity ();
-					size_type i = 0;
-					const_iterator it = x.begin ();
-					while (it != x.end ())
-						alloc.construct (elem + i++, *it++);
-				}
+                elem = alloc.allocate (x.capacity());
+                space = elem + x.size();
+                last = elem + x.capacity ();
+                size_type i = 0;
+                const_iterator it = x.begin ();
+                while (it != x.end ())
+                    alloc.construct (elem + i++, *it++);
 			}
 			
 			~vector () {
@@ -62,17 +58,19 @@ namespace ft {
 			};
 
 			vector& operator = (const vector& x) {
-				clear ();
-				alloc.deallocate (elem, last - elem);
-				elem = space = elem = 0x0;
-				if (x.capacity ()) {
-					elem = alloc.allocate (x.capacity());
-					size_type n = 0;
-					for (iterator iter = x.begin (); iter != x.end (); ++iter)
-						alloc.construct (elem + n++, *iter);
-					space = elem + x.size ();
-					last = elem + x.capacity ();
-				}
+                if (&x != this) {
+                    clear ();
+                    alloc.deallocate (elem, last - elem);
+                    elem = space = elem = 0x0;
+                    if (x.capacity ()) {
+                        elem = alloc.allocate (x.capacity());
+                        size_type n = 0;
+                        for (const_iterator iter = x.begin (); iter != x.end (); ++iter)
+                            alloc.construct (elem + n++, *iter);
+                        space = elem + x.size ();
+                        last = elem + x.capacity ();
+                    }
+                }
 				return (*this);
  			}
 
@@ -83,11 +81,11 @@ namespace ft {
 			iterator end () { return iterator (space); };
 			const_iterator end () const { return const_iterator (space); }
 
-			reverse_iterator rbegin () { return space; };
-			const_reverse_iterator rbegin () const { return space; };
+			reverse_iterator rbegin () { return reverse_iterator (space) ; };
+			const_reverse_iterator rbegin () const { return const_reverse_iterator (space); };
 
-			reverse_iterator rend () { return elem - 1; };
-			const_reverse_iterator rend () const { return elem - 1; };
+			reverse_iterator rend () { return reverse_iterator (elem); };
+			const_reverse_iterator rend () const { return const_reverse_iterator (elem); };
 
 			// capacity
 			size_type size () const { return (space - elem); };
