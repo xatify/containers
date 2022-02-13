@@ -50,8 +50,8 @@ namespace ft {
 					space = elem + x.size();
 					last = elem + x.capacity ();
 					size_type i = 0;
-					iterator it = x.begin ();
-					while (it != it.end ())
+					const_iterator it = x.begin ();
+					while (it != x.end ())
 						alloc.construct (elem + i++, *it++);
 				}
 			}
