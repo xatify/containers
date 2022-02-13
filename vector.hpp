@@ -4,7 +4,7 @@
 #include <memory>
 #include "iterator.hpp"
 #include "type_traits.hpp"
-#include <algorithm>
+#include <iostream>
 
 namespace ft {
 	template <typename T, typename Alloc = std::allocator <T> >
@@ -32,18 +32,13 @@ namespace ft {
 					alloc.construct (p, value);
 			}
 
-			template <typename InputIterator, typename = enable_if<Input_iterator<InputIterator>, InputIterator>>
-				vector(InputIterator first, InputIterator last,
-                        //typename enable_if<!is_same<iterator_traits<InputIterator>::iterator_category, void>, InputIterator> 
+			template <typename InputIterator>
+				vector(InputIterator first, typename enable_if <check<typename InputIterator::iterator_category>::val, InputIterator>::type last,
                         const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
-					size_type n = 0;
-					for (InputIterator f = first; f != last; ++f)
-						n++;
-					elem = alloc.allocate (n);
-					space = last = elem + n;
-					for (size_type n = 0; first != last; ++first, ++n) {
-						alloc.construct (elem + n, *first);
-					}
+                    while (first != last) {
+                        push_back (*first);
+                        ++first;
+                    }
 				}
 			
 			vector (const vector& x): alloc (x.alloc) {
