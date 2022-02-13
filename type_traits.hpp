@@ -12,7 +12,11 @@ namespace ft {
         typedef T type;
     };
 
-    
+    template<class T>
+    struct check
+    {
+        static const bool val = true;
+    };
 }
 
 #endif
