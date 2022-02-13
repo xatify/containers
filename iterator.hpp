@@ -1,5 +1,6 @@
 
 #include <iterator>
+#include "iterator_traits.hpp"
 
 namespace ft {
     
@@ -65,7 +66,7 @@ namespace ft {
 			typedef typename iterator_traits<iterator>::reference			reference;
 		public:
 			rev_iterator (): _iter () {};
-			explicit rev_iterator (iterator_type it): _iter (it) {}
+			rev_iterator (iterator_type it): _iter (it) {}
 			template <class iter>
 				rev_iterator (const rev_iterator<iter>& rev_it): _iter (rev_it.base ()) {}
 			
@@ -113,5 +114,23 @@ namespace ft {
 		private:
 			iterator_type _iter;
 	};
+
+    template <class Iterator>
+        bool operator== (const rev_iterator<Iterator>& lhs, const rev_iterator<Iterator>& rhs) { return lhs.base () == rhs.base (); };
+
+    template <class Iterator>
+        bool operator!= (const rev_iterator<Iterator>& lhs, const rev_iterator<Iterator>& rhs) { return lhs.base () != rhs.base (); };
+	
+    template <class Iterator>
+        bool operator<  (const rev_iterator<Iterator>& lhs, const rev_iterator<Iterator>& rhs) { return lhs.base () > rhs.base (); };
+
+    template <class Iterator>
+        bool operator<= (const rev_iterator<Iterator>& lhs, const rev_iterator<Iterator>& rhs) { return lhs.base () >= rhs.base (); };
+
+    template <class Iterator>
+        bool operator>  (const rev_iterator<Iterator>& lhs, const rev_iterator<Iterator>& rhs) { return lhs.base () < rhs.base (); };
+
+    template <class Iterator>
+        bool operator>= (const rev_iterator<Iterator>& lhs, const rev_iterator<Iterator>& rhs) { return lhs.base () <= rhs.base (); }
 }
 
