@@ -100,7 +100,7 @@ if the size requested is greater than the maximum size (vector::max_size), a len
 	const_reference front () const;
 returns a reference to the first element in the vector.
 
-	refernce 		back ();
+	reference 		back ();
 	const_reference back () const;
 returns a reference to the last element in vector.
 
@@ -120,7 +120,7 @@ if n is greater than, or equal to, the vector size, an exception of type out_of_
 	fill:
 		void assign (size_type n, const value_type& val);
 Assigns new contents to the vector, replacing it's current contents, and modifying it's size accordingly.
-any elements held in the container before the call are destroyed and repaced by newly contructed elements (no assignements 
+any elements held in the container before the call are destroyed and replaced by newly constructed elements (no assignements 
 of elements take place).
 
 
