@@ -11,7 +11,7 @@ namespace ft {
 	class vector {
 		public:
 			typedef std::allocator<T>              			allocator_type;
-			typedef size_t                          		size_type;
+			typedef typename allocator_type::size_type		size_type;
 			typedef T                               		value_type;
 			typedef Iterator<T>                     		iterator;
 			typedef Iterator<const T>               		const_iterator;
@@ -33,13 +33,10 @@ namespace ft {
 			}
 
 			template <typename InputIterator>
-				vector(InputIterator frst, typename enable_if <check<typename iterator_traits<InputIterator>::iterator_category>::val, InputIterator>::type lst,
+				vector(InputIterator frst, typename enable_if <check<typename std::iterator_traits<InputIterator>::iterator_category>::val, InputIterator>::type lst,
                         const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
                     elem = space = last = 0x0;
-                    while (frst != lst) {
-                        push_back (*frst);
-                        ++frst;
-                    }
+                    while (frst != lst) push_back (*frst++);
 				}
 			
 			vector (const vector& x): alloc (x.alloc) {
@@ -154,28 +151,24 @@ namespace ft {
 
 			// modifiers
 			template <class InputIterator>
-				void assign (InputIterator first, typename enable_if<check<typename std::iterator_traits<InputIterator>::iterator_category>::val, InputIterator>::type last) {
+				void assign (InputIterator first, typename  enable_if<check<typename std::iterator_traits<InputIterator>::iterator_category>::val, InputIterator>::type last) {
 					clear ();
-					while (first != last) {
-						push_back (*first);
-						++first;
-					}
+					while (first != last) push_back (*first++);
 				}
 			
 			void assign (size_type n, const value_type& val) {
 				clear ();
-				while (n--)
-					push_back (val);
+				while (n--) push_back (val);
 			}
+
 
 			iterator insert (iterator position, const value_type& val) {
 				size_type diff = position - begin ();
 				push_back (val);
 				position = begin () + diff;
-                iterator it = end ();
-				for (; it != position; --it) {
+                iterator it = end () - 1;
+				for (; it != position; --it)
 					*(it) = *(it - 1);
-				}
 				*it = val;
 				return it;
 			}
@@ -194,44 +187,36 @@ namespace ft {
 			}
 
 			template <class InputIterator>
-				void insert (iterator position, InputIterator first, InputIterator last) {
-					InputIterator tmp = first;
-					size_type sz = 0;
-					while (first++ != last)
-						++sz;
-					first = tmp;
-					size_type pos = position - begin ();
-					if (sz + size () > capacity ())
-						reserve (sz + size ());
-					position = begin () + pos;
-					for (iterator it = end () - 1; it >= position; --it) {
-						alloc.construct (&(*it) + sz, *it);
-					}
-					while (sz--)
-						*position++ = *first++;
+				void insert (iterator position, typename enable_if<check<typename std::iterator_traits<InputIterator>::iterator_category>::val, InputIterator>::type first, InputIterator last) {
+					vector tmp(begin(), position);
+					while (first != last)
+						tmp.push_back (*first++);
+					while (position != this->end())
+						tmp.push_back (*position++);
+					swap (tmp);		
 				}
 			
 			iterator erase (iterator position) {
-				~(*position);
+				alloc.destroy(&(*position));
 				for (iterator it = position; it != end () - 1; ++it)
 					*it = *(it + 1);
-				~(*(end () - 1));
+				alloc.destroy(space - 1);
 				space -= 1;
 				return position;
 			}
 			
 			iterator erase (iterator first, iterator lst) {
-				iterator tmp (first);
-				size_type i = 0;
-				while (first != lst) {
-					~(*first++);
-					++i;
-				}
+				iterator tmp(first);
+				iterator t (first);
+				size_type s = lst - first;
+				while (first != lst)
+					alloc.destroy(&(*first++));
 				while (lst != end())
 					*tmp++ = *lst++;
 				while (tmp != end ())
-					~(*tmp++);
-				space -= i;
+					alloc.destroy (&(*tmp++));
+				space -= s;
+				return t;
 			}
 
 			void push_back (const value_type& val) {
@@ -256,9 +241,7 @@ namespace ft {
 				alloc.construct (space++, val);
 			}
 			
-			void pop_back () {
-				~(*(--space));
-			}
+			void pop_back () { alloc.destroy(&(*(--space))); }
 
 			void clear () {
 				for (T* f = elem; f != space; ++f)
