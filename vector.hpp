@@ -4,6 +4,7 @@
 #include <memory>
 #include "iterator.hpp"
 #include "type_traits.hpp"
+#include "lexicographical.hpp"
 #include <iostream>
 
 namespace ft {
@@ -266,6 +267,43 @@ namespace ft {
 			allocator_type	alloc;
 	};
 
+	// non_members overloads
+
+	// swap
+	template <class T, class Alloc>
+  	void swap (vector<T,Alloc>& x, vector<T,Alloc>& y) { x.swap (y); }
+	
+	// relational operators
+	template <class T, class Alloc>
+  	bool operator== (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+		if (lhs.size () != rhs.size ()) return false;
+		return ft::equal (lhs.begin(), lhs.end(), rhs.begin());
+	};
+
+	template <class T, class Alloc>
+  	bool operator != (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+		return (!(lhs == rhs));
+	}
+
+	template <class T, class Alloc>
+	bool operator <  (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+		return ft::lexicographical_compare (lhs.begin (), lhs.end(), rhs.begin (), rhs.end ());
+	}
+
+	template <class T, class Alloc>
+  	bool operator <= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+		return !(rhs < lhs);
+	}
+
+	template <class T, class Alloc>
+  	bool operator >  (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+		return (rhs < lhs);
+	}
+	
+	template <class T, class Alloc>
+	bool operator >= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+		return !(lhs < rhs);
+	}
 }
 
 #endif
