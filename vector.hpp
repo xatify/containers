@@ -97,15 +97,15 @@ namespace ft {
 			size_type capacity () const { return (last - elem); };
 
 			void resize (size_type n, value_type val = value_type ()) {
-				size_type size = space - elem;
-				if (n > size) {
-					while (size++ < n)
+				size_type sz = size ();
+				if (n > sz) {
+					while (sz++ < n)
 						push_back (val);
 				}
 				else {
 					space = elem + n;
-					while (n++ < size)
-						~(*(elem + n));
+					while (n < sz)
+					    alloc.destroy (elem + n++);
 				}
 			}
 
@@ -114,7 +114,7 @@ namespace ft {
 					throw std::length_error ("length_error");
 				else if (n > capacity ()) {
 					T* tmp = alloc.allocate (n);
-					if (elem == nullptr) {
+					if (elem == 0x0) {
 						elem = space = tmp;
 						last = elem + n;
 					}
@@ -122,7 +122,7 @@ namespace ft {
 						size_type sz = size ();
 						for (size_type i = 0; i < sz; ++i) {
 							alloc.construct (tmp + i, *(elem + i));
-							~(*(elem + i));
+							alloc.destroy (elem + i);
 						}
 						alloc.deallocate (elem, capacity ());
 						elem = tmp;
@@ -130,7 +130,7 @@ namespace ft {
 						last = elem + n;
 					}
 				}
-			};
+			}
 
 			// element access
 			reference front () { return *elem; };
@@ -143,12 +143,12 @@ namespace ft {
 			const_reference operator [] (size_type n) const { return elem[n]; };
 
 			reference at (size_type n) { 
-				if (n >= (space - elem)) throw std::out_of_range ("out of range");
+				if (n >= (space - elem)) throw std::out_of_range ("vector");
 				return (elem[n]);
 			}
 
 			const_reference at (size_type n) const {
-				if (n >= (space - elem)) throw std::out_of_range ("out of range");
+				if (n >= (space - elem)) throw std::out_of_range ("vector");
 				return (elem[n]);
 			};
 
