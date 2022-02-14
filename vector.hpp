@@ -234,8 +234,8 @@ namespace ft {
 						alloc.construct (tmp + i, *(elem + i));
 					    alloc.destroy(elem + i);
 					}
+					alloc.deallocate (elem, space - elem);
 					space = (space - elem) + tmp;
-					alloc.deallocate (elem, 1);
 					elem = tmp;
 					last = elem + c;
 				}
