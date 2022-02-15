@@ -49,9 +49,6 @@ namespace ft {
 	struct is_integral<char32_t>: true_type {};
 	
 	template <>
-	struct is_integral<char32_t>: true_type {};
-	
-	template <>
 	struct is_integral<wchar_t>: true_type {};
 	
 	template <>
@@ -84,8 +81,8 @@ namespace ft {
 	template <>
 	struct is_integral<unsigned long long int>: true_type {};
 
-}
 
+}
 
 #endif
 
