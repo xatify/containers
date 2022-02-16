@@ -1,0 +1,159 @@
+**********************************MAP**********************************
+map : assiciative array is an abstract data type that stores a collection of (key, value) pairs, 
+such that each possible key appears at most once in the collection
+
+template <class Key, class T, class compare = less<Key>, class Alloc = allocator<pair<const Key, T>> class map;
+
+maps are typically imlemented as binary search trees
+
+-----member types----------
+
+key_type				: Key
+mapped_type				: T
+value_type				: pair<const key_type, mapped_type>
+key_compare				: Compare (default to less<key_type>
+value_compare			: Nested function class to compare elements
+allocator_type			: Alloc
+reference				: allocator_type::reference
+const_refernce			: allocator_type::const_reference
+pointer					: allocator_type::pointer
+const_pointer			: allocator_type::const_pointer
+iterator				: a biddirectional iterator to value_type ( convertible to const_iterator)
+const_iterator			: a bidirectional iterator to const value_type
+reverse_iterator		: reverse_iterator<iterator>
+const_reverse_iterator	: reverse_iterator<const_iterator>
+difference_type			: signed integral type, iterator_traits<iterator>::difference_type
+size_type				: unsigned integral type, size_t
+
+------member function------
+	explicit map (const key_compare& comp = key_compare(), const allocator_type& alloc = allocator_type ());
+
+	template <class InputIterator>
+		map (InputIterator first, InputIterator last, const key_compare& comp = key_compare (), const allocator_type& alloc = allocator_type ());
+
+	map (const map& x);
+
+* the container keeps an internal copy of alloc and comp, which are used to allocate storage and sort elements
+
+	~map ();
+* destroys the container object
+
+	map& operator = (const map& x);
+* assign new content to the container, replacing its current content
+
+-------iterators---------------
+	iterator begin ();
+	const_iterator begin () const;
+
+* returns an iterator referring to the first element in the map container.
+
+	iterator end ();
+	const_iterator end () const;
+
+* returns an iterator referring to the past the end elemet in the map container
+
+	reverse_iterator rbegin ();
+	const_reverse_iterator rbegin () const;
+
+* returns a reverse iterator pointing to the last element in the container
+* rbegin points to the element preceding the one that would be pointed to by member end ()
+
+	reverse_iterator rend ();
+	const_reverse_iterator rend () const;
+
+* returns a reverse iterator pointing to the theoretical element right before the first element
+
+
+--------capacity----------------
+	bool empty () const;
+
+* returns whether the map container is empty
+
+	size_type size () const;
+
+* returns the number of elements in the map container
+
+	size_type max_size () const;
+
+* returns the maximum number of elements that the map container can hold
+
+----------element access------------
+
+	mapped_type& operator[] (const key_type& k);
+
+* if k matches the key of an element in the container, the function returns a reference to its mapped value.
+
+-----------modifiers-----------------
+
+	pair<iterator, bool> insert (const value_type& val);
+
+	iterator insert (iterator position, const value_type& val);
+
+	template <class InputIterator>
+		void insert (InputIterator first, InputIterator last);
+
+* extends the container by inserting new elements, effevtively increasing the container size by the number of
+ elements inserted.
+
+	void erase (iterator position);
+	
+	size_type erase (const key_type& k);
+
+	void erase (iterator first, iterator last);
+
+* removes from the map container either a single element or a range of elements
+
+	void swap (map& x);
+
+* exchange the content of the container by the content of x, which is another map of the same type, sizes my diff
+
+	void clear ();
+
+* removes all elements from the map container (which are destroyed), leaving the container with a size of 0
+
+--------------observers--------------------
+
+	key_compare key_comp () const;
+
+* returns a copy of the comparison object used by the container to compare keys.
+
+	value_compare value_comp () const;
+
+* returns a comparison object that can be used to compare two elements to get whether the key of the first one goes
+ before the second
+
+
+--------------operations--------------------
+
+	iterator find (const key_type& k);
+	const_iterator find (const key_type& k) const;
+
+* searches the container for an element with a key equivalent to k and returns an iterator to it if found, otherwise
+ it returns an iterator to map::end
+
+	size_type count (const key_type& k) const;
+
+* searches all elements in a map container with a key equivalent to k and returns the number of matches
+
+	iterator	lower_bound (const key_type& k);
+	const_iterator lower_bound (const key_type& k) const;
+
+* returns an iterator pointing to the first element in the container whose key is not considered to go before k 
+ (either it is equivalent or goes after)
+
+	iterator upper_bound (const key_type& k);
+	const_iterator upper_bound (const key_type& k) const;
+
+* returns an iterator pointing to the first element in the container whose key is considered to go after k
+
+	pair<const_iterator, const_iterator> equal_range (const key_type& k) const;
+	pair<iterator, iterator>  equal_range (const key_type& k);
+
+* returns the bounds of a range that includes all the elements in the container which have a key equivalent to k
+
+--------------allocator-----------------------
+
+	allocator_type get_allocator () const;
+
+* returns a copy of the allocator object asociated with the map
+
