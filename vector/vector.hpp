@@ -11,7 +11,7 @@ namespace ft {
 	template <typename T, typename Alloc = std::allocator <T> >
 	class vector {
 		public:
-			typedef std::allocator<T>              			allocator_type;
+			typedef Alloc             						allocator_type;
 			typedef typename allocator_type::size_type		size_type;
 			typedef T                               		value_type;
 			typedef Iterator<T>                     		iterator;
