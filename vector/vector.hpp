@@ -3,8 +3,8 @@
 
 #include <memory>
 #include "iterator.hpp"
-#include "type_traits.hpp"
-#include "lexicographical.hpp"
+#include "../utility/type_traits.hpp"
+#include "../utility/lexicographical.hpp"
 #include <iostream>
 
 namespace ft {
