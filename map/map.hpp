@@ -72,7 +72,7 @@ namespace ft {
 
 			// capacity
 			bool empty () { return rbt.empty (); }
-			size_type size () const { return rbt.size (); }
+			size_type size () const { return rbt.size (rbt.root ()); }
 			size_type max_size () const { return alloc.max_size (); }
 
 			// Element access
@@ -94,7 +94,7 @@ namespace ft {
 				std::swap (rbt, x.rbt)
 			}
 
-			void clear () { rbt.clear (); }
+			void clear () { rbt.clear (rbt.root()); }
 
 
 			// Oberservers
