@@ -4,6 +4,7 @@
 #include <functional>
 #include <memory>
 #include <utility>
+#include "rbt.hpp"
 
 namespace ft {
 
@@ -32,16 +33,31 @@ namespace ft {
 		public :
 
 			// constructors
-			explicit map (const key_compare& comp = key_compare (), const allocator_type& alloc = allocator_type ());
+			explicit map (const key_compare& comp_ = key_compare (), 
+						const allocator_type& alloc_ = allocator_type ()): comp (comp_), alloc (alloc_), rbt () {}
 
 			template <typename InputIterator>
-				map (InputIterator first, InputIterator last, const key_compare& comp = key_compare (), const allocator_type& alloc = allocator_type ()));
+				map (InputIterator first,
+					InputIterator last,
+					const key_compare& comp = key_compare (),
+					const allocator_type& alloc = allocator_type ()));
 			
-			map (const map& x);
+			map (const map& x) {
+				comp = x.comp;
+				alloc = x.alloc;
+				rbt = x.rbt;
+			}
 
-			~map ();
+			~map () {};
 
-			map& operator= (const map& x);
+			map& operator= (const map& x) {
+				if (this != &x) {
+					comp = x.comp;
+					alloc = x.alloc;
+					rbt = x.rbt;
+				}
+				return *this;
+			}
 
 			// iterators
 			//iterator begin ();
@@ -55,9 +71,9 @@ namespace ft {
 
 
 			// capacity
-			bool empty ();
-			size_type size () const;
-			size_type max_size () const;
+			bool empty () { return rbt.empty (); }
+			size_type size () const { return rbt.size (); }
+			size_type max_size () const { return alloc.max_size (); }
 
 			// Element access
 			mapped_type& operator[] (const key_type& k);
@@ -72,13 +88,18 @@ namespace ft {
 			size_type erase (const key_type& k);
 			//void erase (iterator first, iterator last);
 			
-			void swap (map& x);
-			void clear ();
+			void swap (map& x) {
+				std::swap (alloc, x.alloc);
+				std::swap (comp, x.comp);
+				std::swap (rbt, x.rbt)
+			}
+
+			void clear () { rbt.clear (); }
 
 
 			// Oberservers
-			key_compare key_comp () const;
-			value_compare  value_comp () const;
+			key_compare key_comp () const { return comp; };
+			value_compare  value_comp () const { return value_compare (); };
 
 			// Operations
 			//iterator find (const key_type& x);
@@ -91,11 +112,12 @@ namespace ft {
 			//std::pair<const iterator, const_iterator> equal_range (const key_type& k) const;
 			//pair <iterator, iterator> equal_range (const key_type& k);
 
-			allocator_type get_allocator () const;
+			allocator_type get_allocator () const { return alloc; };
 
 		private:
+			key_compare			comp;
 			allocator_type		alloc;
-			Compare				comp;
+			RBT <key_type, mapped_type, comp> rbt;
 
 	};
 
