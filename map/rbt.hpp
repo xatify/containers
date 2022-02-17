@@ -361,21 +361,14 @@ class RBT {
 		// capacity functions
 		bool empty () { return ROOT == NIL; }
 
-		// number of nodes in the tree
-		size_t size () const {
-			return size (ROOT);
-		}
-
-
 		// count recursively the number of nodes in the subtree
 		// rooted at x
 		size_t size (pointer x) const {
 			if (x == NIL) return 0;
-			return (size (x->right) + size (x->left));
+			return (size (x->right) + size (x->left) + 1);
 		}
  
-
-		void clear () { clear (ROOT); }									//delete all the elements
+		pointer		root () const { return ROOT; }						// return the root of the rbt
 	
 		void clear (pointer x) {										// delete the subtree rooted at x  except nil								
 			if (x != NIL) {
