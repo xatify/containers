@@ -3,6 +3,7 @@
 
 #include <memory>
 #include "iterator.hpp"
+#include "../reverse_iterator/reverse_iterator.hpp"
 #include "../utility/type_traits.hpp"
 #include "../utility/lexicographical.hpp"
 #include <iostream>
@@ -18,8 +19,8 @@ namespace ft {
 			typedef Iterator<const T>               		const_iterator;
 			typedef T&					            		reference;
 			typedef const T&			            		const_reference;
-			typedef rev_iterator<iterator>      		    reverse_iterator;
-			typedef rev_iterator<const_iterator>		    const_reverse_iterator;
+			typedef reverse_iterator<iterator>      		reverse_iterator;
+			typedef ft::reverse_iterator<const_iterator>	const_reverse_iterator;
 
 			explicit vector (const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
 				elem = space = last = 0x0;
