@@ -2,21 +2,22 @@
 #ifndef __REVERSE_ITERATOR_HPP__
 #define __REVERSE_ITERATOR_HPP__
 
+#include <iterator>
 namespace ft {
 	
 	template <typename  Iterator>
 	class reverse_iterator {
 		public:
 			typedef 	Iterator		iterator_type;
-			typedef typename iterator_traits<Iterator>::iterator_category   iterator_category;
-            typedef typename iterator_traits<Iterator>::value_type			value_type;
-			typedef typename iterator_traits<Iterator>::difference_type		difference_type;
-			typedef typename iterator_traits<Iterator>::pointer				pointer;
-			typedef typename iterator_traits<Iterator>::reference			reference;
+			typedef typename std::iterator_traits<Iterator>::iterator_category   iterator_category;
+            typedef typename std::iterator_traits<Iterator>::value_type			value_type;
+			typedef typename std::iterator_traits<Iterator>::difference_type		difference_type;
+			typedef typename std::iterator_traits<Iterator>::pointer				pointer;
+			typedef typename std::iterator_traits<Iterator>::reference			reference;
 		public:
 			reverse_iterator (): iter () {};
 
-			explicit reverse_iterator (iterator_type it): iter (it.base ()) {}
+			explicit reverse_iterator (iterator_type it): iter (it) {}
 
 			template <class Iter>
 				reverse_iterator (const reverse_iterator<Iter>& rev): iter (rev.base ()) {}
