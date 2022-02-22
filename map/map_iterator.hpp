@@ -6,8 +6,6 @@
 template <typename RBT_>
 class rbt_iterator: public std::iterator <std::bidirectional_iterator_tag, typename RBT_::value_type> {
 	
-	friend class RBT;
-
 	typedef	typename RBT_::pointer		node_ptr;
 	
 	public:
@@ -19,9 +17,12 @@ class rbt_iterator: public std::iterator <std::bidirectional_iterator_tag, typen
 		typedef typename std::iterator<std::bidirectional_iterator_tag, value_type>::iterator_category	iterator_category;
 
 	public:
-		rbt_iterator (RBT_* tree_ = 0x0, node_ptr node_ = 0x0): tree (tree_), node (node_) {};
-
+		rbt_iterator (const RBT_* tree_ = 0x0, node_ptr node_ = 0x0): tree (tree_), node (node_) {};
+		
 		rbt_iterator (const rbt_iterator& x): tree (x.tree), node (x.node) {}
+		
+		template <typename RBT>
+		operator rbt_iterator<RBT> () { return rbt_iterator<RBT> (reinterpret_cast <const RBT*> (tree) , reinterpret_cast <typename RBT::pointer> (node)); }
 		
 		rbt_iterator& operator = (const rbt_iterator& x) {
 			if (this != &x) {
@@ -42,7 +43,7 @@ class rbt_iterator: public std::iterator <std::bidirectional_iterator_tag, typen
 			return (*this);
 		}
 
-		rbt_iterator& operator ++ (int) {
+		rbt_iterator operator ++ (int) {
 			rbt_iterator tmp (*this);
 			node = tree->successor (node);
 			return tmp;
@@ -65,9 +66,14 @@ class rbt_iterator: public std::iterator <std::bidirectional_iterator_tag, typen
 				node = tree->predecessor (node);
 			return (*this);
 		}
+
+		node_ptr	get_node () const { return node; }
+		RBT_*		get_tree () const { return tree; }
+	
 	private:
-		RBT_			*tree;
+		const RBT_		*tree;
 		node_ptr		node;
 };
+
 
 #endif
