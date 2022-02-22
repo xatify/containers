@@ -7,6 +7,8 @@
 #include "../reverse_iterator/reverse_iterator.hpp"
 #include "map_iterator.hpp"
 #include "rbt.hpp"
+#include "../utility/lexicographical.hpp"
+
 
 namespace ft {
 
@@ -74,11 +76,11 @@ namespace ft {
 			// iterators
 			iterator begin () { return iterator (&rbt, rbt.extrem_left (rbt.root ())); }
 			
-			const_iterator begin () const { return const_iterator (begin ()); }
+			const_iterator begin () const { return iterator (&rbt, rbt.extrem_left (rbt.root ())); }
 			
 			iterator end () { return iterator (&rbt, rbt.nil ()); }
 
-			const_iterator end () const { return const_iterator (&rbt, rbt.nil ()); }
+			const_iterator end () const { return iterator (&rbt, rbt.nil ()); }
 			
 			reverse_iterator rbegin () { return reverse_iterator (end ()); };
 			
@@ -109,13 +111,16 @@ namespace ft {
 			}
 
 			iterator insert (iterator position, const value_type& val) {
+				(void)position;
 				return iterator (&rbt, (rbt.insert (val)).first);
 			}  
 
 			template <typename InputIterator>
 			void insert (InputIterator first, InputIterator last) {
-				while (first != last)
-					insert (*first++);
+				while (first != last) {
+					insert (*first);
+					++first;
+				}
 			}
 			
 			void erase (iterator position) {
@@ -142,15 +147,15 @@ namespace ft {
 
 			// Oberservers
 			key_compare 	key_comp () const { return comp; };
-			value_compare	value_comp () const { return value_compare (); };
+			value_compare	value_comp () const { return value_compare (comp); };
 
 			//Operations
 			iterator find (const key_type& x) {
-				return iterator (&rbt, rbt.find (x));
+				return iterator (&rbt, rbt.search (x));
 			}
 
 			const_iterator find (const key_type& k) const {
-				return const_iterator (&rbt, rbt.find (k));
+				return const_iterator (&rbt, rbt.search (k));
 			}
 			size_type count (const key_type& k) const {
 				return (rbt.search (k) != rbt.nil ());
@@ -191,26 +196,43 @@ namespace ft {
 
 	// Relational operations
 	template <class Key, class T, class Compare, class Alloc>
-  	bool operator== ( const map<Key ,T ,Compare ,Alloc>& lhs, const map<Key, T, Compare,Alloc>& rhs);
+  	bool operator== ( const map<Key ,T ,Compare ,Alloc>& lhs, const map<Key, T, Compare,Alloc>& rhs) {
+		if (lhs.size () == rhs.size ()) {
+			return ft::equal (lhs.begin (), lhs.end (), rhs.begin ());
+		}
+		return false;
+	}
 
 	template <class Key, class T, class Compare, class Alloc>
-	bool operator!= ( const map<Key, T, Compare, Alloc>& lhs, const map< Key, T, Compare, Alloc>& rhs );
+	bool operator!= ( const map<Key, T, Compare, Alloc>& lhs, const map< Key, T, Compare, Alloc>& rhs ) {
+		return !(lhs == rhs);
+	}
 
 	template <class Key, class T, class Compare, class Alloc>
-  	bool operator<  ( const map<Key, T, Compare, Alloc>& lhs, const map<Key, T, Compare, Alloc>& rhs );
+  	bool operator<  ( const map<Key, T, Compare, Alloc>& lhs, const map<Key, T, Compare, Alloc>& rhs ) {
+		return ft::lexicographical_compare (lhs.begin (), lhs.end (), rhs.begin (), rhs.end(), lhs.value_comp ());
+	}
 
 	template <class Key, class T, class Compare, class Alloc>
-	bool operator<= ( const map<Key, T, Compare, Alloc>& lhs, const map<Key, T, Compare, Alloc>& rhs );
+	bool operator<= ( const map<Key, T, Compare, Alloc>& lhs, const map<Key, T, Compare, Alloc>& rhs ) {
+		return !(rhs < lhs);
+	}
 
 	template <class Key, class T, class Compare, class Alloc>
-  	bool operator>  ( const map<Key, T, Compare, Alloc>& lhs, const map<Key, T, Compare, Alloc>& rhs );
+  	bool operator>  ( const map<Key, T, Compare, Alloc>& lhs, const map<Key, T, Compare, Alloc>& rhs ) {
+		return 	rhs < lhs;  
+	}
 
 	template <class Key, class T, class Compare, class Alloc>
-  	bool operator>= ( const map<Key, T, Compare, Alloc>& lhs, const map<Key, T, Compare, Alloc>& rhs );
+  	bool operator>= ( const map<Key, T, Compare, Alloc>& lhs, const map<Key, T, Compare, Alloc>& rhs ) {
+		return !(lhs < rhs); 
+	}
 
 	// Swap function template
 	template <class Key, class T, class Compare, class Alloc>
-  	void swap (map<Key ,T ,Compare ,Alloc>& x, map<Key, T, Compare, Alloc>& y);
+  	void swap (map<Key ,T ,Compare ,Alloc>& x, map<Key, T, Compare, Alloc>& y) {
+		x.swap (y);
+	}
 
 	// function object template inside map 
 	// uses the internal comparison object to generate the appropriate comparison
