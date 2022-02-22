@@ -10,11 +10,10 @@ namespace ft {
 	struct node {
 		
 		typedef Pair 				value_type;
-		enum Color { RED, BLACK }	color;
-		
 		value_type					value;
+		enum Color { RED, BLACK }	color;
 		node						*left, *right, *parent;
-
+		
 		node (const value_type& v = value_type ()): value (v), color (BLACK) {};
 		typename Pair::first_type & key () { return value.first; };
 	};
@@ -81,7 +80,7 @@ namespace ft {
 			}
 
 			// search the tree for a node with key k
-			pointer		search (key_type& k) {
+			pointer		search (key_type& k) const {
 				pointer x = ROOT;
 				while (x != NIL) {
 					if (comp (k, x->key ())) 						// k < x.key
@@ -97,7 +96,7 @@ namespace ft {
 			// Returns a pointer  to the first element in 
 			// the tree whose key is not considered to go before k 
 			// (i.e., either it is equivalent or goes after).
-			pointer lower_bound (key_type& k) {
+			pointer lower_bound (key_type& k) const {
 				pointer x = ROOT;
 
 				pointer y = NIL;
@@ -116,25 +115,16 @@ namespace ft {
 
 			// Returns a pointer to the first element 
 			// in the tree whose key is considered to go after k.
-			pointer upper_bound (key_type& k) {
-				pointer x = ROOT;
+			pointer upper_bound (key_type& k) const {
+				pointer lb = lower_bound (k);
 
-				pointer y = NIL;
-				while (x != NIL) {
-					if (comp (k, x->key ())) {
-						y = x;
-						x = x->left;
-					}
-					else if (comp (x->key (), k))
-						x = x->right;
-					else
-						return y;
-				}
-				return y;
+				if (!comp (lb->key (), k) && !comp (k, lb->key ()))
+					return successor (lb);
+				return lb;
 			}
 
 			// returns the deepest left node in sub-binay tree rooted at x
-			pointer		extrem_left (pointer x) {
+			pointer		extrem_left (pointer x) const {
 				if (x == NIL) return x;
 				while (x->left != NIL)
 					x = x->left;
@@ -142,14 +132,14 @@ namespace ft {
 			}
 
 			// returns the deepest right node in sub-binay tree rooted at x
-			pointer		extrem_right (pointer x) {
+			pointer		extrem_right (pointer x) const {
 				if (x == NIL) return x;
 				while (x->right != NIL)
 					x = x->right;
 				return x;
 			}
 		
-			pointer		successor (pointer	x) {					// returns the successor of a node assuming x != nil
+			pointer		successor (pointer	x) const {					// returns the successor of a node assuming x != nil
 				if (x == NIL) return x;
 				if (x->right != NIL)
 					return extrem_left (x->right);
@@ -161,7 +151,7 @@ namespace ft {
 				return y;
 			}
 
-			pointer		predecessor (pointer x) {					// returns the predecessor of a node assuming x != nil
+			pointer		predecessor (pointer x) const {					// returns the predecessor of a node assuming x != nil
 				if (x == NIL) return x;
 				if (x->left != NIL)
 					return extrem_right (x->left);
@@ -198,12 +188,12 @@ namespace ft {
 				x->parent = y->parent;
 				if (y->parent == NIL)
 					ROOT = x;
-				else if (y == y->parent->left)
-					y->parent->left = x;
-				else
+				else if (y == y->parent->right)
 					y->parent->right = x;
+				else
+					y->parent->left = x;
 				x->right = y;
-				y->parent = y;
+				y->parent = x;
 			}
 
 			// construct a node z from the pair v
@@ -318,15 +308,15 @@ namespace ft {
 			
 			// remove a range of node between iterator first last
 			void remove (iterator first, iterator last) {
-				pointer first_node	= first.node;
-				pointer last_node	= last.node;
+				pointer first_node	= first.get_node ();
+				pointer last_node	= last.get_node ();
 
 
 				while (first_node != last_node) {
 					pointer next_node = successor (first_node);
-					remove (first);
+					remove (first_node);
 
-					first = next_node;
+					first_node = next_node;
 				}
 			}	
 			// delete a node z from the RBT
@@ -358,8 +348,8 @@ namespace ft {
 					y->left->parent = y;
 					y->color = z->color;
 				}
-				if (y_original_color == node_type::BLCK)
-					this->remove_fixeup (x);
+				if (y_original_color == node_type::BLACK)
+					this->remove_fixup (x);
 				alloc.destroy (z);
 				alloc.deallocate (z, 1);
 			}
@@ -425,7 +415,7 @@ namespace ft {
 			}
 
 			// capacity functions
-			bool empty () { return ROOT == NIL; }
+			bool empty () const { return ROOT == NIL; }
 
 			// count recursively the number of nodes 
 			//in the subtree rooted at x
@@ -438,15 +428,17 @@ namespace ft {
 			pointer		nil () const { return NIL; }						// return the nil node
 		
 
-		private :
-			void clear (pointer x) {										// delete the subtree rooted at x  except nil								
+			void clear (pointer x) {										// delete the subtree rooted at x  except nil
 				if (x != NIL) {
 					clear (x->left);
 					clear (x->right);
 					alloc.destroy (x);
 					alloc.deallocate (x, 1);
 				}
+				if (x == ROOT)
+					ROOT = NIL;
 			}
+		private :
 			// clone a new tree from the subtree rooted at x
 			// and use new_nil as the new sentinel in case
 			// we have different trees
