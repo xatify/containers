@@ -28,7 +28,6 @@ namespace ft {
 
 			explicit Vector (size_type n, const value_type& value = value_type (), 
                             const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
-				
 				elem = alloc.allocate (n);
 				space = last = elem + n;
 				for (T* p = elem; p != last; ++p)
@@ -39,8 +38,12 @@ namespace ft {
 				Vector(InputIterator frst, typename enable_if <check<typename std::iterator_traits<InputIterator>::iterator_category>::val, InputIterator>::type lst,
                         const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
 					elem = space = last = 0x0;
+					Vector tmp;
 					while (frst != lst)
-						push_back (*frst++);
+						tmp.push_back (*frst++);
+					this->reserve (tmp.size ());
+					for (iterator first = tmp.begin (); first != tmp.end (); ++first)
+						this->push_back (*first);
 				}
 			
 			Vector (const Vector& x): alloc (x.alloc) {
@@ -100,6 +103,7 @@ namespace ft {
 			void resize (size_type n, value_type val = value_type ()) {
 				size_type sz = size ();
 				if (n > sz) {
+					this->reserve (n);
 					while (sz++ < n)
 						push_back (val);
 				}
@@ -156,13 +160,20 @@ namespace ft {
 			// modifiers
 			template <class InputIterator>
 				void assign (InputIterator first, typename  enable_if<check<typename std::iterator_traits<InputIterator>::iterator_category>::val, InputIterator>::type last) {
-					clear ();
-					while (first != last) push_back (*first++);
+					Vector tmp (first, last);
+					this->swap (tmp);
 				}
 			
 			void assign (size_type n, const value_type& val) {
-				clear ();
-				while (n--) push_back (val);
+				if (n > capacity ()) {
+					Vector tmp (n, val);
+					this->swap (tmp);
+				}
+				else {
+					clear ();
+					while (n--)
+						alloc.construct (space++, val);
+				}
 			}
 
 
@@ -180,7 +191,11 @@ namespace ft {
 			void insert (iterator position, size_type n, const value_type& val) {
 				
 				if (size () + n > capacity ()) {
-					Vector tmp (begin (), position);
+					Vector tmp;
+					tmp.reserve (n > size ()? size () + n: size () * 2);
+					iterator it = begin ();
+					while (it != position)
+						tmp.push_back (*it++);
 					while (n--)
 						tmp.push_back (val);
 					while (position != end ())
@@ -214,7 +229,11 @@ namespace ft {
 					size_type n = range_.size ();
 
 					if (size () + n > capacity ()) {
-						Vector new_vec (begin (), position);
+						Vector new_vec;
+						new_vec.reserve (n > size () ? size () + n: size () * 2);
+						iterator it = begin ();
+						while (it != position)
+							new_vec.push_back (*it++);
 						for (iterator it = range_.begin (); it != range_.end (); ++it)
 							new_vec.push_back (*it);
 						while (position != end ())
