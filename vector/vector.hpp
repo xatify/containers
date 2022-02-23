@@ -10,7 +10,7 @@
 
 namespace ft {
 	template <typename T, typename Alloc = std::allocator <T> >
-	class vector {
+	class Vector {
 		public:
 			typedef Alloc             						allocator_type;
 			typedef typename allocator_type::size_type		size_type;
@@ -22,12 +22,13 @@ namespace ft {
 			typedef reverse_iterator<iterator>      		reverse_iterator;
 			typedef ft::reverse_iterator<const_iterator>	const_reverse_iterator;
 
-			explicit vector (const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
+			explicit Vector (const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
 				elem = space = last = 0x0;
 			}
 
-			explicit vector (size_type n, const value_type& value = value_type (), 
+			explicit Vector (size_type n, const value_type& value = value_type (), 
                             const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
+				
 				elem = alloc.allocate (n);
 				space = last = elem + n;
 				for (T* p = elem; p != last; ++p)
@@ -35,13 +36,14 @@ namespace ft {
 			}
 
 			template <typename InputIterator>
-				vector(InputIterator frst, typename enable_if <check<typename std::iterator_traits<InputIterator>::iterator_category>::val, InputIterator>::type lst,
+				Vector(InputIterator frst, typename enable_if <check<typename std::iterator_traits<InputIterator>::iterator_category>::val, InputIterator>::type lst,
                         const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
-                    elem = space = last = 0x0;
-                    while (frst != lst) push_back (*frst++);
+					elem = space = last = 0x0;
+					while (frst != lst)
+						push_back (*frst++);
 				}
 			
-			vector (const vector& x): alloc (x.alloc) {
+			Vector (const Vector& x): alloc (x.alloc) {
                 elem = alloc.allocate (x.capacity());
                 space = elem + x.size();
                 last = elem + x.capacity ();
@@ -51,12 +53,12 @@ namespace ft {
                     alloc.construct (elem + i++, *it++);
 			}
 			
-			~vector () {
+			~Vector () {
 				clear ();
 				alloc.deallocate (elem, last - elem);
 			};
 
-			vector& operator = (const vector& x) {
+			Vector& operator = (const Vector& x) {
                 if (&x != this) {
                     clear ();
                     alloc.deallocate (elem, last - elem);
@@ -135,19 +137,19 @@ namespace ft {
 			reference front () { return *elem; };
 			const_reference front () const { return *elem; };
 
-			reference back () { return *space; };
-			const_reference back () const { return *space; };
+			reference back () { return *(space - 1); };
+			const_reference back () const { return *(space - 1); };
 
 			reference operator [] (size_type n) { return elem[n]; };
 			const_reference operator [] (size_type n) const { return elem[n]; };
 
 			reference at (size_type n) { 
-				if (n >= (space - elem)) throw std::out_of_range ("vector");
+				if (n >= size ()) throw std::out_of_range ("vector");
 				return (elem[n]);
 			}
 
 			const_reference at (size_type n) const {
-				if (n >= (space - elem)) throw std::out_of_range ("vector");
+				if (n >= size ()) throw std::out_of_range ("vector");
 				return (elem[n]);
 			};
 
@@ -176,26 +178,66 @@ namespace ft {
 			}
 			
 			void insert (iterator position, size_type n, const value_type& val) {
-				size_type diff = position - begin ();
-				if (n + size () > capacity ())
-					reserve (n + size ());
-				position = begin () + diff;
-				for (iterator it = end () - 1; it >= position; --it) {
-					alloc.construct (&(*it) + n, *it);
+				
+				if (size () + n > capacity ()) {
+					Vector tmp (begin (), position);
+					while (n--)
+						tmp.push_back (val);
+					while (position != end ())
+						tmp.push_back (*position++);
+					this->swap (tmp);
 				}
-				space += n;
-				while (n--)
-					*position++ = val;
+				else {
+					Vector tmp (position, end ());
+					iterator it = tmp.begin ();
+					while (position != end () && n) {
+						*position++ = val;
+						n--;
+					}
+					if (position == end ()) {
+						while (n--)
+							alloc.construct (space++, val);
+					}
+					else if (!n) {
+						while (position != end ())
+							*position++ = *it++;
+					}
+					while (it != tmp.end ())
+						push_back (*it++);
+				}
 			}
 
 			template <class InputIterator>
 				void insert (iterator position, typename enable_if<check<typename std::iterator_traits<InputIterator>::iterator_category>::val, InputIterator>::type first, InputIterator last) {
-					vector tmp(begin(), position);
-					while (first != last)
-						tmp.push_back (*first++);
-					while (position != this->end())
-						tmp.push_back (*position++);
-					swap (tmp);		
+					
+					Vector range_ (first, last);
+					size_type n = range_.size ();
+
+					if (size () + n > capacity ()) {
+						Vector new_vec (begin (), position);
+						for (iterator it = range_.begin (); it != range_.end (); ++it)
+							new_vec.push_back (*it);
+						while (position != end ())
+							new_vec.push_back (*position++);
+						this->swap (new_vec);
+					}
+					else {
+						Vector tmp (position, end ());
+						iterator it = tmp.begin ();
+						iterator range_it = range_.begin ();
+						while (position != end () && range_it != range_.end())
+							*position++ = *range_it++;
+						if (position == end ()) {
+							while (range_it != range_.end())
+								alloc.construct (space++, *range_it++);
+						}
+						else if (range_it == range_.end()) {
+							while (position != end ())
+								*position++ = *range_it++;
+						}
+						while (it != tmp.end ())
+							push_back (*it++);
+					}	
 				}
 			
 			iterator erase (iterator position) {
@@ -251,7 +293,7 @@ namespace ft {
 				space = elem;
 			}
 
-			void swap (vector &v) {
+			void swap (Vector &v) {
 				std::swap (alloc, v.alloc);
 				std::swap (elem, v.elem);
 				std::swap (space, v.space);
@@ -272,37 +314,37 @@ namespace ft {
 
 	// swap
 	template <class T, class Alloc>
-  	void swap (vector<T,Alloc>& x, vector<T,Alloc>& y) { x.swap (y); }
+  	void swap (Vector<T,Alloc>& x, Vector<T,Alloc>& y) { x.swap (y); }
 	
 	// relational operators
 	template <class T, class Alloc>
-  	bool operator== (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+  	bool operator== (const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs) {
 		if (lhs.size () != rhs.size ()) return false;
 		return ft::equal (lhs.begin(), lhs.end(), rhs.begin());
 	};
 
 	template <class T, class Alloc>
-  	bool operator != (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+  	bool operator != (const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs) {
 		return (!(lhs == rhs));
 	}
 
 	template <class T, class Alloc>
-	bool operator <  (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+	bool operator <  (const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs) {
 		return ft::lexicographical_compare (lhs.begin (), lhs.end(), rhs.begin (), rhs.end ());
 	}
 
 	template <class T, class Alloc>
-  	bool operator <= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+  	bool operator <= (const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs) {
 		return !(rhs < lhs);
 	}
 
 	template <class T, class Alloc>
-  	bool operator >  (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+  	bool operator >  (const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs) {
 		return (rhs < lhs);
 	}
 	
 	template <class T, class Alloc>
-	bool operator >= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+	bool operator >= (const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs) {
 		return !(lhs < rhs);
 	}
 }
