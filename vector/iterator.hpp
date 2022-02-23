@@ -51,11 +51,13 @@ namespace ft {
 			
 			reference operator * () const { return *_ptr; }
 			pointer operator->() const { return _ptr; }
-			reference operator [] (size_t n) const { return _ptr[n]; }
+			reference operator [] (difference_type n) const { return _ptr[n]; }
 
 		private:
 			pointer _ptr;
 	};
+
+	
 }
 
 #endif
