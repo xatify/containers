@@ -57,14 +57,14 @@ class rbt_iterator: public std::iterator <std::bidirectional_iterator_tag, typen
 			return (*this);
 		}
 
-		rbt_iterator& operator -- (int) {
+		rbt_iterator operator -- (int) {
 			rbt_iterator tmp (*this);
 
 			if (node == tree->nil ())
 				node = tree->extrem_right (tree->root ());
 			else
 				node = tree->predecessor (node);
-			return (*this);
+			return (tmp);
 		}
 
 		node_ptr	get_node () const { return node; }
