@@ -2,15 +2,31 @@
 #define __VECTOR_HPP__
 
 #include <memory>
+
 #include "iterator.hpp"
 #include "../reverse_iterator/reverse_iterator.hpp"
 #include "../utility/type_traits.hpp"
 #include "../utility/lexicographical.hpp"
 #include <iostream>
+#include <algorithm>
 
 namespace ft {
 	template <typename T, typename Alloc = std::allocator <T> >
 	class Vector {
+		
+		private:
+			// construction range
+			template <class InputIterator>
+			void range_construct_(InputIterator first, InputIterator last, std::random_access_iterator_tag) {
+				this->reserve (last - first);
+			}
+
+			template <class InputIterator>
+			void range_construct_ (InputIterator first, InputIterator last, std::input_iterator_tag) {
+				(void)first;
+				(void)last;
+			}
+
 		public:
 			typedef Alloc             						allocator_type;
 			typedef typename allocator_type::size_type		size_type;
@@ -33,17 +49,16 @@ namespace ft {
 				for (T* p = elem; p != last; ++p)
 					alloc.construct (p, value);
 			}
+			
 
 			template <typename InputIterator>
-				Vector(InputIterator frst, typename enable_if <check<typename std::iterator_traits<InputIterator>::iterator_category>::val, InputIterator>::type lst,
+				Vector(InputIterator first, typename enable_if <check<typename std::iterator_traits<InputIterator>::iterator_category>::val, InputIterator>::type last,
                         const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
+					typedef typename std::iterator_traits<InputIterator>::iterator_category category;
 					elem = space = last = 0x0;
-					Vector tmp;
-					while (frst != lst)
-						tmp.push_back (*frst++);
-					this->reserve (tmp.size ());
-					for (iterator first = tmp.begin (); first != tmp.end (); ++first)
-						this->push_back (*first);
+					range_construct_ (first, last, category ());
+					while (first != last)
+						push_back (*first++);
 				}
 			
 			Vector (const Vector& x): alloc (x.alloc) {
@@ -178,6 +193,7 @@ namespace ft {
 
 
 			iterator insert (iterator position, const value_type& val) {
+				
 				size_type diff = position - begin ();
 				push_back (val);
 				position = begin () + diff;
@@ -203,27 +219,28 @@ namespace ft {
 					this->swap (tmp);
 				}
 				else {
-					Vector tmp (position, end ());
-					iterator it = tmp.begin ();
-					while (position != end () && n) {
-						*position++ = val;
-						n--;
+					iterator it = end () - 1;
+					while (it >= position) {
+						if (&(*(it + n)) >= space)
+							alloc.construct (&(*(it + n)), *it);
+						else
+							*(it + n) = *it;
+						--it;
 					}
-					if (position == end ()) {
-						while (n--)
-							alloc.construct (space++, val);
+					size_type s = n;
+					while (n--) {
+						if (position >= space)
+							alloc.construct (&(*position), val);
+						else
+							*position = val;
+						++position;
 					}
-					else if (!n) {
-						while (position != end ())
-							*position++ = *it++;
-					}
-					while (it != tmp.end ())
-						push_back (*it++);
+					space += s;
 				}
 			}
 
 			template <class InputIterator>
-				void insert (iterator position, typename enable_if<check<typename std::iterator_traits<InputIterator>::iterator_category>::val, InputIterator>::type first, InputIterator last) {
+				void insert (iterator position, InputIterator first, typename enable_if<check<typename std::iterator_traits<InputIterator>::iterator_category>::val, InputIterator>::type last) {
 					
 					Vector range_ (first, last);
 					size_type n = range_.size ();
@@ -241,21 +258,24 @@ namespace ft {
 						this->swap (new_vec);
 					}
 					else {
-						Vector tmp (position, end ());
-						iterator it = tmp.begin ();
-						iterator range_it = range_.begin ();
-						while (position != end () && range_it != range_.end())
-							*position++ = *range_it++;
-						if (position == end ()) {
-							while (range_it != range_.end())
-								alloc.construct (space++, *range_it++);
+						iterator it = end () - 1;
+						while (it >= position) {
+							if (&(*(it + n)) >= space)
+								alloc.construct (&(*(it + n)), *it);
+							else
+								*(it + n) = (*it);
+							--it;
 						}
-						else if (range_it == range_.end()) {
-							while (position != end ())
-								*position++ = *range_it++;
+						iterator t = range_.begin ();
+						while (t != range_.end()) {
+							if (position >= space)
+								alloc.construct(&(*position), *t);
+							else
+								*position = *t;
+							++position;
+							++t;
 						}
-						while (it != tmp.end ())
-							push_back (*it++);
+						space += n;
 					}	
 				}
 			
