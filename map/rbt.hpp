@@ -14,7 +14,9 @@ namespace ft {
 		enum Color { RED, BLACK }	color;
 		node						*left, *right, *parent;
 		
-		node (const value_type& v = value_type ()): value (v), color (BLACK) {};
+		node (const value_type& v = value_type ()): value (v), color (BLACK) {
+			left = right = parent = 0x0;
+		};
 		typename Pair::first_type & key () { return value.first; };
 	};
 
@@ -50,12 +52,13 @@ namespace ft {
 		public:
 
 			RBT (const key_compare& comp_ = key_compare ()): comp (comp_), alloc (allocator_type ()) {
+				sz = 0;
 				NIL = alloc.allocate (1);
 				alloc.construct (NIL, node_type ());
 				ROOT = NIL;
 			}
 
-			RBT (const RBT& x): comp (x.comp), alloc (x.alloc) {
+			RBT (const RBT& x): sz (x.sz), comp (x.comp), alloc (x.alloc) {
 				NIL = alloc.allocate (1);
 				alloc.construct (NIL, node_type ());
 				ROOT = x.clone (x.ROOT, NIL, this->alloc);
@@ -64,6 +67,7 @@ namespace ft {
 
 			RBT& operator = (const RBT& x) {
 				if (this != &x) {
+					sz = x.sz;
 					comp = x.comp;
 					alloc = x.alloc;
 					this->clear (ROOT);					// delete all internal nodes
@@ -222,6 +226,7 @@ namespace ft {
 						return std::make_pair (x, false);
 					}
 				}
+				++sz;										// increment the size
 				z->parent = y;
 				if (y == NIL)
 					ROOT = z;
@@ -299,11 +304,14 @@ namespace ft {
 			}
 
 			// delete a an element using the key if it exists
-			void	remove (key_type& k) {
+			size_t remove (key_type& k) {
 				pointer z = search (k);
 
-				if (z != NIL)
+				if (z != NIL) {
 					remove (z);
+					return 1;
+				}
+				return 0;
 			}
 			
 			// remove a range of node between iterator first last
@@ -315,7 +323,6 @@ namespace ft {
 				while (first_node != last_node) {
 					pointer next_node = successor (first_node);
 					remove (first_node);
-
 					first_node = next_node;
 				}
 			}	
@@ -350,6 +357,7 @@ namespace ft {
 				}
 				if (y_original_color == node_type::BLACK)
 					this->remove_fixup (x);
+				--sz;
 				alloc.destroy (z);
 				alloc.deallocate (z, 1);
 			}
@@ -358,7 +366,7 @@ namespace ft {
 			// fix up the invariants of the rbt
 			// after removing a node
 			void	remove_fixup (pointer x) {
-				while (x != NIL && x->color == node_type::BLACK) {
+				while (x != ROOT && x->color == node_type::BLACK) {
 					if (x == x->parent->left) {
 						pointer w = x->parent->right;
 						if (w->color == node_type::RED) {
@@ -402,10 +410,11 @@ namespace ft {
 								w->right->color = node_type::BLACK;
 								w->color = node_type::RED;
 								this->left_rotate (w);
-								w = x->parent->parent;
+								w = x->parent->left;
 							}
 							w->color = x->parent->color;
 							x->parent->color = node_type::BLACK;
+							w->left->color = node_type::BLACK;
 							this->right_rotate (x->parent);
 							x = ROOT;
 						}
@@ -419,10 +428,7 @@ namespace ft {
 
 			// count recursively the number of nodes 
 			//in the subtree rooted at x
-			size_t size (pointer x) const {
-				if (x == NIL) return 0;
-				return (size (x->right) + size (x->left) + 1);
-			}
+			size_t size () const { return sz; }
 	
 			pointer		root () const { return ROOT; }						// return the root of the rbt
 			pointer		nil () const { return NIL; }						// return the nil node
@@ -435,9 +441,18 @@ namespace ft {
 					alloc.destroy (x);
 					alloc.deallocate (x, 1);
 				}
-				if (x == ROOT)
+				if (x == ROOT) {
 					ROOT = NIL;
+					sz = 0;
+				}
 			}
+		void swap (RBT& x) {
+			std::swap (sz, x.sz);
+			std::swap (comp, x.comp);
+			std::swap (alloc, x.alloc);
+			std::swap (ROOT, x.ROOT);
+			std::swap (NIL, x.NIL);
+		}
 		private :
 			// clone a new tree from the subtree rooted at x
 			// and use new_nil as the new sentinel in case
@@ -455,8 +470,10 @@ namespace ft {
 					clone_->right->parent = clone_;
 				return clone_;
 			}
+		
 
 		private:
+			size_t			sz;
 			Compare			comp;		// compare function object for the keys
 			allocator_type	alloc;		// allocator
 			pointer			ROOT;		// the root of the tree
