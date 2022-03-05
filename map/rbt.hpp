@@ -319,7 +319,6 @@ namespace ft {
 				pointer first_node	= first.get_node ();
 				pointer last_node	= last.get_node ();
 
-
 				while (first_node != last_node) {
 					pointer next_node = successor (first_node);
 					remove (first_node);
@@ -426,8 +425,7 @@ namespace ft {
 			// capacity functions
 			bool empty () const { return ROOT == NIL; }
 
-			// count recursively the number of nodes 
-			//in the subtree rooted at x
+			// the size of the tree
 			size_t size () const { return sz; }
 	
 			pointer		root () const { return ROOT; }						// return the root of the rbt
@@ -446,13 +444,14 @@ namespace ft {
 					sz = 0;
 				}
 			}
-		void swap (RBT& x) {
-			std::swap (sz, x.sz);
-			std::swap (comp, x.comp);
-			std::swap (alloc, x.alloc);
-			std::swap (ROOT, x.ROOT);
-			std::swap (NIL, x.NIL);
-		}
+			
+			void swap (RBT& x) {
+				std::swap (sz, x.sz);
+				std::swap (comp, x.comp);
+				std::swap (alloc, x.alloc);
+				std::swap (ROOT, x.ROOT);
+				std::swap (NIL, x.NIL);
+			}
 		private :
 			// clone a new tree from the subtree rooted at x
 			// and use new_nil as the new sentinel in case
