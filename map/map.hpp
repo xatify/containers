@@ -107,7 +107,6 @@ namespace ft {
 			// modifiers
 			ft::pair<iterator, bool> insert (const value_type& val) {
 				std::pair<node_ptr, bool> p_ = rbt.insert (val);
-
 				return (ft::make_pair(iterator (&rbt, p_.first), p_.second));
 			}
 
