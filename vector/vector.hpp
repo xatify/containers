@@ -15,17 +15,15 @@ namespace ft {
 	class Vector {
 		
 		private:
-			// construction range
+			// tag dispatch for range construction on the type of iterator
 			template <class InputIterator>
-			void range_construct_(InputIterator first, InputIterator last, std::random_access_iterator_tag) {
-				this->reserve (last - first);
-			}
-
+			void range_construct_(InputIterator first, InputIterator last, std::random_access_iterator_tag) { this->reserve (last - first); }
+			
 			template <class InputIterator>
-			void range_construct_ (InputIterator first, InputIterator last, std::input_iterator_tag) {
-				(void)first;
-				(void)last;
-			}
+			void range_construct_ (InputIterator first, InputIterator last, std::bidirectional_iterator_tag) { this->reserve (std::distance (first, last)); }
+			
+			template <class InputIterator>
+			void range_construct_ (InputIterator first, InputIterator last, std::input_iterator_tag) { (void)first; (void)last; }
 
 		public:
 			typedef Alloc             						allocator_type;
@@ -52,23 +50,19 @@ namespace ft {
 			
 
 			template <typename InputIterator>
-				Vector(InputIterator first, typename enable_if <check<typename std::iterator_traits<InputIterator>::iterator_category>::val, InputIterator>::type last,
+				Vector(InputIterator frst, typename enable_if <check<typename std::iterator_traits<InputIterator>::iterator_category>::val, InputIterator>::type lst,
                         const allocator_type& alloc_ = allocator_type ()): alloc (alloc_) {
-					typedef typename std::iterator_traits<InputIterator>::iterator_category category;
 					elem = space = last = 0x0;
-					range_construct_ (first, last, category ());
-					while (first != last)
-						push_back (*first++);
+					range_construct_ (frst, lst, typename std::iterator_traits<InputIterator>::iterator_category ());
+					while (frst != lst)
+						push_back (*frst++);
 				}
 			
 			Vector (const Vector& x): alloc (x.alloc) {
-                elem = alloc.allocate (x.capacity());
-                space = elem + x.size();
-                last = elem + x.capacity ();
-                size_type i = 0;
-                const_iterator it = x.begin ();
-                while (it != x.end ())
-                    alloc.construct (elem + i++, *it++);
+				elem = space = last = 0x0;
+				reserve (x.capacity ());
+				for (const_iterator it = x.begin (); it != x.end (); ++it)
+					push_back (*it);
 			}
 			
 			~Vector () {
@@ -80,14 +74,11 @@ namespace ft {
                 if (&x != this) {
                     clear ();
                     alloc.deallocate (elem, last - elem);
-                    elem = space = elem = 0x0;
+                    elem = space = last = 0x0;
                     if (x.capacity ()) {
-                        elem = alloc.allocate (x.capacity());
-                        size_type n = 0;
-                        for (const_iterator iter = x.begin (); iter != x.end (); ++iter)
-                            alloc.construct (elem + n++, *iter);
-                        space = elem + x.size ();
-                        last = elem + x.capacity ();
+                        reserve (x.capacity ());
+						for (const_iterator it = x.begin (); it != x.end (); ++it)
+							push_back (*it);
                     }
                 }
 				return (*this);
@@ -193,7 +184,6 @@ namespace ft {
 
 
 			iterator insert (iterator position, const value_type& val) {
-				
 				size_type diff = position - begin ();
 				push_back (val);
 				position = begin () + diff;
@@ -205,7 +195,6 @@ namespace ft {
 			}
 			
 			void insert (iterator position, size_type n, const value_type& val) {
-				
 				if (size () + n > capacity ()) {
 					Vector tmp;
 					tmp.reserve (n > size ()? size () + n: size () * 2);
@@ -310,16 +299,10 @@ namespace ft {
 					last = elem + 1;
 				}
 				else if (space == last) {
-					c <<= 1;
-					T *tmp = alloc.allocate (c);
-					for (size_type i = 0; i < static_cast <size_type> (space - elem); ++i) {
-						alloc.construct (tmp + i, *(elem + i));
-					    alloc.destroy(elem + i);
-					}
-					alloc.deallocate (elem, space - elem);
-					space = (space - elem) + tmp;
-					elem = tmp;
-					last = elem + c;
+					Vector tmp;
+					tmp.reserve (c << 1);
+					tmp.insert (tmp.begin (), this->begin (), this->end ());
+					this->swap (tmp);
 				}
 				alloc.construct (space++, val);
 			}
